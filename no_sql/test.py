@@ -57,21 +57,26 @@ def get_ltv_by_phone(client, phone_number):
     query = client.query('test', 'store')
     query.select('ltv')
     query.where(aerospike.predicates.equals('phone', phone_number))
-    records = query.results({'total_timeout': 2000})
+    records = query.results({'total_timeout': 3000})
     if not records:
         logging.error('Requested phone number is not found ' + str(phone_number))
-    return records[0]
+    return records[0][2]['ltv']
 
 
-aerospike_client = connected_client()
+def main():
+    aerospike_client = connected_client()
 
-for i in range(0, 1000):
-    add_customer(aerospike_client, i, i, i + 1)
+    for i in range(0, 1000):
+        add_customer(aerospike_client, i, i, i + 1)
 
-aerospike_client.index_integer_create("test", "store", "phone", "phone_idx")
+    aerospike_client.index_integer_create("test", "store", "phone", "phone_idx")
 
-for i in range(0, 1000):
-    assert (i + 1 == get_ltv_by_id(aerospike_client, i)), "No LTV by ID " + str(i)
-    assert (i + 1 == get_ltv_by_phone(aerospike_client, i)), "No LTV by phone " + str(i)
+    for i in range(0, 1000):
+        assert (i + 1 == get_ltv_by_id(aerospike_client, i)), "No LTV by ID " + str(i)
+        assert (i + 1 == get_ltv_by_phone(aerospike_client, i)), "No LTV by phone " + str(i)
 
-aerospike_client.close()
+    aerospike_client.close()
+
+
+if __name__ == "__main__":
+    main()
