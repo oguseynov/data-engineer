@@ -69,7 +69,10 @@ def main():
     for i in range(0, 1000):
         add_customer(aerospike_client, i, i, i + 1)
 
-    aerospike_client.index_integer_create("test", "store", "phone", "phone_idx")
+    try:
+        aerospike_client.index_integer_create("test", "store", "phone", "phone_idx")
+    except aerospike.exception.IndexFoundError:
+        logging.info('Index with the name phone_idx already exists')
 
     for i in range(0, 1000):
         assert (i + 1 == get_ltv_by_id(aerospike_client, i)), "No LTV by ID " + str(i)
